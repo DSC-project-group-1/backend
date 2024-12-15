@@ -9,6 +9,6 @@ const upload = require('../middlewares/multer');
 
 router.post('/upload-audio', upload.single('file'), uploadAudio);  // For single file upload
 
-// router.post('/upload-audio', upload.array('files', 10), uploadAudio);  // To accept multiple files (up to 10 files)
+router.post('/upload-audio', upload.array('files', 10), uploadAudio);  // To accept multiple files (up to 10 files)
 
 module.exports = router;
