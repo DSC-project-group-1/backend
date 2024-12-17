@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const session = require('express-session');
 const connectDB = require('./config/dbConfig');
 const { PORT } = require('./config/serverConfig');
 const audioRoutes = require('./routes/audioRoutes');
@@ -16,6 +17,11 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+}));
 
 app.use('/api/audio', audioRoutes);
 app.use('/api/analyze', analyzeRoutes);
