@@ -1,21 +1,45 @@
-const analyzeText = (req, res) => {
-  const emotionProbabilities = req.body; // Capture the probabilities from the request body
+const axios = require("axios");
 
-  if (!emotionProbabilities || Object.keys(emotionProbabilities).length === 0) {
-    return res.status(400).send({ error: 'No emotion probabilities received' });
+const analyzeText = async (req, res) => {
+  try {
+    console.log("Coming to analyze text");
+
+    // Make GET request to the FastAPI server /predict
+    const aiResponse = await axios.get('http://127.0.0.1:8000/predict');
+    console.log(aiResponse.data);
+
+    if (!aiResponse.data) {
+      return res.status(500).json({ error: 'Error analyzing text' });
+    }
+
+    if (!aiResponse.data.predictions) {
+      return res.status(500).json({ error: 'No predictions could be generated' });
+    }
+
+    const emotionProbabilities = aiResponse.data.predictions;
+
+    const mostLikelyEmotion = Object.entries(emotionProbabilities).reduce(
+      (a, b) => (a[1] > b[1] ? a : b),
+      [null, 0]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Emotion analysis completed',
+      mostLikelyEmotion: { 
+        emotion: mostLikelyEmotion[0], 
+        probability: mostLikelyEmotion[1] 
+      },
+      probabilities: emotionProbabilities,
+    });
+
+  } catch (error) {
+    console.error('Error in emotion analysis:', error);
+    return res.status(500).json({ 
+      error: 'Error processing emotion analysis',
+      details: error.message
+    });
   }
-
-  // Example of additional processing (if needed)
-  const mostLikelyEmotion = Object.entries(emotionProbabilities).reduce(
-    (a, b) => (a[1] > b[1] ? a : b),
-    [null, 0]
-  );
-
-  res.status(200).send({
-    message: 'Emotion analysis completed',
-    mostLikelyEmotion: { emotion: mostLikelyEmotion[0], probability: mostLikelyEmotion[1] },
-    probabilities: emotionProbabilities,
-  });
 };
 
 module.exports = { analyzeText };

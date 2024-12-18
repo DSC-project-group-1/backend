@@ -1,14 +1,19 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); // Import the file system module
+const axios = require('axios');
 
+// This code is shit and I know it :) didn't have the time to make it better.
+
+const uploadPath = path.join(__dirname, '../../uploads');
+const filename = 'record_out.wav';
 // Set storage options for multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Folder where the uploaded files will be stored
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    cb(null, 'record_out.wav'); // Save file as 'record_out.wav'
+    cb(null, filename);
   }
 });
 
@@ -31,32 +36,39 @@ const upload = multer({
 
 // Upload audio controller to handle the upload process
 const uploadAudio = async (req, res) => {
+  const audioFile = req.file; // Single file upload
+
+  if (!audioFile) {
+    return res.status(400).send('No file uploaded');
+  }
+  console.log("File uploaded");
+
+  // Process the uploaded audio file (e.g., transcribe, analyze sentiment, etc.)
+  const filePath = path.join(__dirname, `${uploadPath}/${filename}`);
+  // const sentimentResult = await require('../controllers/analyzeController').analyzeText();
+
   try {
-    const audioFile = req.file; // Single file upload
-
-    if (!audioFile) {
-      return res.status(400).send('No file uploaded');
-    }
-    console.log("File uploaded");
-
-    // Process the uploaded audio file (e.g., transcribe, analyze sentiment, etc.)
-    const filePath = path.join(__dirname, '../uploads/record_out.wav');
-    const sentimentResult = await require('../controllers/analyzeController').analyzeText(filePath);
-
-    // Delete the file after processing
-    fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error('Error deleting file:', err);
-      } else {
-        console.log('File deleted successfully');
-      }
+    const response = await axios.get('http://127.0.0.1:8000/predict');
+    console.log(response.data);
+    const emotionProbabilities = response.data.predictions;
+    const mostLikelyEmotion = Object.entries(emotionProbabilities).reduce(
+      (a, b) => (a[1] > b[1] ? a : b),
+      [null, 0]
+    );
+    return res.status(200).json({
+      message: 'Emotion analysis completed',
+      mostLikelyEmotion: {
+        emotion: mostLikelyEmotion[0],
+        probability: mostLikelyEmotion[1]
+      },
+      probabilities: emotionProbabilities,
     });
-
-    // Send the analysis result
-    res.status(200).json({ sentiment: sentimentResult });
-
   } catch (error) {
-    res.status(500).json({ error: 'Error processing audio' });
+    console.error('Error in emotion analysis:', error);
+    return res.status(500).json({
+      error: 'Error processing emotion analysis',
+      details: error.message
+    });
   }
 };
 
