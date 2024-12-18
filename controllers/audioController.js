@@ -1,5 +1,6 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs'); // Import the file system module
 
 // Set storage options for multer
 const storage = multer.diskStorage({
@@ -36,11 +37,22 @@ const uploadAudio = async (req, res) => {
     if (!audioFile) {
       return res.status(400).send('No file uploaded');
     }
-      console.log("File uploaded")
-    // Process the uploaded audio file (e.g., transcribe, analyze sentiment, etc.)
-    const transcribedText = await require('../services/speechToTextService').transcribe(audioFile);
-    const sentimentResult = await require('../services/mlService').analyzeText(transcribedText);
+    console.log("File uploaded");
 
+    // Process the uploaded audio file (e.g., transcribe, analyze sentiment, etc.)
+    const filePath = path.join(__dirname, '../uploads/record_out.wav');
+    const sentimentResult = await require('../controllers/analyzeController').analyzeText(filePath);
+
+    // Delete the file after processing
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error('Error deleting file:', err);
+      } else {
+        console.log('File deleted successfully');
+      }
+    });
+
+    // Send the analysis result
     res.status(200).json({ sentiment: sentimentResult });
 
   } catch (error) {

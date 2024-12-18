@@ -11,11 +11,13 @@ const { initSocket } = require('./sockets/gameSocket');
 const errorHandler = require('./utils/errorHandler');
 const gameRoutes = require('./routes/gameRoutes');
 const authRoutes = require('./routes/authRoutes');
+const bodyParser = require('body-parser');
 
 connectDB();
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.SESSION_SECRET,
