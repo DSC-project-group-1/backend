@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const sendEmail = require('../utils/sendEmail'); // Import sendEmail function
 
 // Generate JWT Token
