@@ -15,7 +15,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Pull the latest code from GitHub
-                git branch: 'main', url: 'https://github.com/DSC-project-group-1/backend.git'
+                git branch: 'main', credentialsId: 'github-secret', url: 'https://github.com/DSC-project-group-1/backend.git'
             }
         }
 
