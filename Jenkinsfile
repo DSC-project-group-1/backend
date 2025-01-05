@@ -32,7 +32,9 @@ pipeline {
             steps {
                 // Restart the server using PM2
                 dir(APP_DIR) {
-                    bat 'npm run start' // Adjust server entry point
+                    // Kill any process using port 5000 (Windows command)
+                    bat 'netstat -ano | findstr :5000 | for /f "tokens=5" %a in ("%line%") do taskkill /f /pid %a'
+                    bat 'npm run start'
                 }
             }
         }
