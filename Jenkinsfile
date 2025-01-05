@@ -15,7 +15,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Pull the latest code from GitHub
-                git branch: 'main', credentialsId: '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', url: 'https://github.com/DSC-project-group-1/backend.git'
+                git branch: 'main', credentialsId: 'namo1', url: 'https://github.com/DSC-project-group-1/backend.git'
             }
         }
 
